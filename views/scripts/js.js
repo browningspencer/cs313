@@ -1,4 +1,5 @@
 var localRecipes = [];
+var recipeToEdit = "";
 
 //var x = document.getElementById("myForm").elements.namedItem("fname").value;
 //document.getElementById("demo").innerHTML = x;
@@ -66,9 +67,9 @@ function getData() {
       recSpecs += "<p><strong>Ingredients: </strong>" + specs.ingredients + "</p>";
       recSpecs += "<p><strong>Directions: </strong>" + specs.directions + "</p>";
       recSpecs += "<br><hr>";
-      recSpecs += "<button class='btn btn-secondary edit-recipe' data-toggle='modal' data-target='#editFormModal' data-id='" + specs.name + "' data-name='" + specs.name + "' data-ingredients='" + specs.ingredients+ "' data-ingredients='" + specs.ingredients+ "'>";
-      recSpecs += "Edit</button>";
-      recSpecs += "<button class='btn btn-danger delete-recipe' data-id='" + specs.name + "'>Delete</button>";
+      //recSpecs += "<button class='btn btn-secondary' data-toggle='modal' data-target='#editFormModal' data-id='" + specs.name + "' data-name='" + specs.name + "' data-ingredients='" + specs.ingredients+ "' data-ingredients='" + specs.ingredients+ "'>";
+      recSpecs += "<button class='btn btn-secondary' onclick='editData(\"" + specs.name + "\")'>Edit</button>";
+      recSpecs += "<button class='btn btn-danger' data-id='" + specs.name + "' onclick='removeData(\"" + specs.name + "\")'>Delete</button>";
       recSpecs += "</div></div></div>";
 
       var x = document.getElementById('savedRecipes');
@@ -78,31 +79,94 @@ function getData() {
   }
 }
 
-/*
-$(document).ready(function() {
-  $('.delete-recipe').on('click', function(){
-    var id = $(this).data('id');
-    var url = '/delete/'+id;
-    if(confirm('Delete Recipe?')) {
-      $.ajax({
-        url: url,
-        type: 'DELETE',
-        success: function(result) {
-          console.log('Deleting Recipe...');
-          window.location.href='/';
-        },
-        error: function(err) {
-          console.log(err);
-        }
-      });
+function removeData(name) {
+  console.log("Passed name \"" + name + "\"");
+  //var recipeSpecs = {name: name, ingredients: ingredients, directions: directions};
+  //console.log("check Local Storage");
+  if (document.getElementById('savedRecipes')) {
+    document.getElementById('savedRecipes').innerHTML = "";
+  }
+  var recipeArray = [];
+  if (localStorage.getItem("localRecipes")) {
+    console.log('There is an item called "localRecipes" ');
+    recipeArray = localStorage.getItem("localRecipes");
+    recipeArray = JSON.parse(recipeArray);
+    for (var i = 0; i <= recipeArray.length; i++) {
+      if (recipeArray[i] == name) {
+        var r = confirm('Delete Recipe?');
+        if(r == true) {
+          console.log(name + " will be deleted from the array");
+          recipeArray.splice(i, 1);
+          localStorage.setItem("localRecipes", JSON.stringify(recipeArray));
+        }  
+        break;
+      }
+      if (i == recipeArray.length) {
+        console.log(name + " doesn't exist in the array");
+        alert(name + " doesn't exist");
+        break;
+      }
     }
-  });
+  }
+  getData();
+}
 
-  $('.edit-recipe').on('click', function(){
-    $('#edit-form-name').val($(this).data('name'));
-    $('#edit-form-ingredients').val($(this).data('ingredients'));
-    $('#edit-form-directions').val($(this).data('directions'));
-    $('#edit-form-id').val($(this).data('id'));
-  });
-});
+
+
+function editData(name) {
+  console.log("Passed name \"" + name + "\"");
+  recipeToEdit = name;
+
+  if (document.getElementById('savedRecipes')) {
+    document.getElementById('savedRecipes').innerHTML = "";
+  }
+
+  var recipeArray = [];
+  if (localStorage.getItem("localRecipes")) {
+    recipeArray = localStorage.getItem("localRecipes");
+    recipeArray = JSON.parse(recipeArray);
+    var specs = localStorage.getItem(name);
+    specs = JSON.parse(specs);
+    document.getElementById("edit").elements.namedItem("name").value = specs.name;
+    document.getElementById("edit").elements.namedItem("ingredients").value = specs.ingredients;
+    document.getElementById("edit").elements.namedItem("directions").value = specs.directions;
+
+    $(document).ready(function() {
+      $('#editFormModal').modal('show');
+    }); 
+  }
+  getData();
+}
+
+//var name = document.getElementById("edit").elements.namedItem("name").value;
+//editFormModal
+
+function updateData() {
+  var recipeArray = [];
+
+  recipeArray = localStorage.getItem("localRecipes");
+  recipeArray = JSON.parse(recipeArray);
+  var specs = localStorage.getItem(recipeToEdit);
+  specs = JSON.parse(specs);
+
+  specs.name = document.getElementById("edit").elements.namedItem("name").value;
+  specs.ingredients = document.getElementById("edit").elements.namedItem("ingredients").value;
+  specs.directions = document.getElementById("edit").elements.namedItem("directions").value;
+
+  //recipeArray[recipeToEdit]
+
+/*
+  for (var i = 0; i <= recipeArray.length; i++) {
+    if (recipeArray[i] == recipeToEdit) {
+      recipeArray[i] = specs;
+      console.log(recipeArray[i]);
+    }
+  }
 */
+
+
+  localStorage.setItem(recipeToEdit, JSON.stringify(specs));
+  localStorage.setItem("localRecipes", JSON.stringify(recipeArray));
+
+  location.reload();
+}
